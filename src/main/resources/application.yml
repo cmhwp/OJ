@@ -86,10 +86,10 @@ wx:
 # todo 需替换配置
 cos:
   client:
-    accessKey: xxx
-    secretKey: xxx
-    region: xxx
-    bucket: xxx
+    accessKey: AKID1vnX6i7YyOyOgt24ziIgAXgcKoMvMi0E
+    secretKey: IV1QefXGrGXfeR5e3KOI0XxISPJ3c3JS
+    region: ap-chongqing
+    bucket: onlinejudge-1318048461
 # 接口文档配置
 knife4j:
   enable: true
