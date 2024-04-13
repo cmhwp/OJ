@@ -7,12 +7,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yupi.oj.common.ErrorCode;
 import com.yupi.oj.exception.BusinessException;
-import com.yupi.oj.mapper.PostFavourMapper;
+import com.yupi.oj.mapper.*;
 import com.yupi.oj.model.entity.Post;
 import com.yupi.oj.model.entity.PostFavour;
 import com.yupi.oj.model.entity.User;
-import com.yupi.oj.service.PostFavourService;
-import com.yupi.oj.service.PostService;
+import com.yupi.oj.service.*;
+
 import javax.annotation.Resource;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
@@ -20,9 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 帖子收藏服务实现
- *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://yupi.icu">编程导航知识星球</a>
  */
 @Service
 public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFavour>
@@ -30,6 +27,9 @@ public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFav
 
     @Resource
     private PostService postService;
+
+    @Resource
+    private PostFavourMapper postFavourMapper;
 
     /**
      * 帖子收藏
@@ -109,8 +109,16 @@ public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFav
         }
     }
 
-}
+    @Override
+    public long getPost_favourStatus(long postId, long userId) {
+        QueryWrapper<PostFavour> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userId", userId)
+                .eq("postId", postId);
+        // 如果记录数为 0，则返回 -1，否则返回 1
+        return postFavourMapper.selectCount(queryWrapper) > 0 ? 1 : -1;
+    }
 
+}
 
 
 

@@ -56,6 +56,35 @@ public class PostVO implements Serializable {
      * 更新时间
      */
     private Date updateTime;
+    /**
+     * 摘要
+     */
+    private String summary;
+
+    /**
+     * 封面
+     */
+    private String cover;
+
+    /**
+     * 话题
+     */
+    private String topic;
+
+    /**
+     * 状态：allow - 允许 ban - 禁止
+     */
+    private String status;
+
+    /**
+     * 阅读数
+     */
+    private Integer readNum;
+
+    /**
+     * 回复数
+     */
+    private Integer replyNum;
 
     /**
      * 标签列表
@@ -76,6 +105,11 @@ public class PostVO implements Serializable {
      * 是否已收藏
      */
     private Boolean hasFavour;
+
+    /**
+     * 是否已浏览
+     */
+    private Boolean hasRead;
 
     /**
      * 包装类转对象

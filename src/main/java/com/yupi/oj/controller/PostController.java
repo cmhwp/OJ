@@ -2,6 +2,7 @@ package com.yupi.oj.controller;
 
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.gson.Gson;
 import com.yupi.oj.annotation.AuthCheck;
 import com.yupi.oj.common.BaseResponse;
 import com.yupi.oj.common.DeleteRequest;
@@ -47,6 +48,8 @@ public class PostController {
     @Resource
     private UserService userService;
 
+    private final static Gson GSON = new Gson();
+
     // region 增删改查
 
     /**
@@ -65,13 +68,20 @@ public class PostController {
         BeanUtils.copyProperties(postAddRequest, post);
         List<String> tags = postAddRequest.getTags();
         if (tags != null) {
-            post.setTags(JSONUtil.toJsonStr(tags));
+            post.setTags(GSON.toJson(tags));
         }
         postService.validPost(post, true);
         User loginUser = userService.getLoginUser(request);
         post.setUserId(loginUser.getId());
         post.setFavourNum(0);
         post.setThumbNum(0);
+        post.setReadNum(0);
+        post.setReplyNum(0);
+        if (!userService.isAdmin(request)) {
+            post.setStatus("allow");
+        } else {
+            post.setStatus("ban");
+        }
         boolean result = postService.save(post);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         long newPostId = post.getId();

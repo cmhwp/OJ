@@ -1,10 +1,13 @@
 package com.yupi.oj.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yupi.oj.model.dto.user.UserQueryRequest;
+import com.yupi.oj.model.entity.Post;
 import com.yupi.oj.model.entity.User;
 import com.yupi.oj.model.vo.LoginUserVO;
+import com.yupi.oj.model.vo.PostVO;
 import com.yupi.oj.model.vo.UserVO;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -118,4 +121,12 @@ public interface UserService extends IService<User> {
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
+    /**
+     * 分页获取关注列表
+     *
+     * @param userPage
+     * @param request
+     * @return
+     */
+    Page<UserVO> getUserVOPage(Page<User> userPage, HttpServletRequest request);
 }

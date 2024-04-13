@@ -10,12 +10,7 @@ import com.yupi.oj.config.WxOpenConfig;
 import com.yupi.oj.constant.UserConstant;
 import com.yupi.oj.exception.BusinessException;
 import com.yupi.oj.exception.ThrowUtils;
-import com.yupi.oj.model.dto.user.UserAddRequest;
-import com.yupi.oj.model.dto.user.UserLoginRequest;
-import com.yupi.oj.model.dto.user.UserQueryRequest;
-import com.yupi.oj.model.dto.user.UserRegisterRequest;
-import com.yupi.oj.model.dto.user.UserUpdateMyRequest;
-import com.yupi.oj.model.dto.user.UserUpdateRequest;
+import com.yupi.oj.model.dto.user.*;
 import com.yupi.oj.model.entity.User;
 import com.yupi.oj.model.vo.LoginUserVO;
 import com.yupi.oj.model.vo.UserVO;
@@ -40,6 +35,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.gson.Gson;
+
 import static com.yupi.oj.service.impl.UserServiceImpl.SALT;
 
 /**
@@ -58,6 +55,8 @@ public class UserController {
 
     @Resource
     private WxOpenConfig wxOpenConfig;
+
+    private final static Gson GSON = new Gson();
 
     // region 登录相关
 
@@ -312,6 +311,10 @@ public class UserController {
         User loginUser = userService.getLoginUser(request);
         User user = new User();
         BeanUtils.copyProperties(userUpdateMyRequest, user);
+        List<String> tags = userUpdateMyRequest.getTags();
+        if (tags != null) {
+            user.setTags(GSON.toJson(tags));
+        }
         user.setId(loginUser.getId());
         boolean result = userService.updateById(user);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);

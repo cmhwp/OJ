@@ -49,7 +49,32 @@ public class Post implements Serializable {
      * 收藏数
      */
     private Integer favourNum;
+    /**
+     * 摘要
+     */
+    private String summary;
+    /**
+     * 封面
+     */
+    private String cover;
 
+    /**
+     * 话题
+     */
+    private String topic;
+    /**
+     * 阅读数
+     */
+    private Integer readNum;
+
+    /**
+     * 回复数
+     */
+    private Integer replyNum;
+    /**
+     * 状态：allow - 允许 ban - 禁止
+     */
+    private String status;
     /**
      * 创建用户 id
      */

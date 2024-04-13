@@ -2,13 +2,15 @@ package com.yupi.oj.model.vo;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+
+import cn.hutool.json.JSONUtil;
+import com.yupi.oj.model.entity.User;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
 
 /**
  * 用户视图（脱敏）
- *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://yupi.icu">编程导航知识星球</a>
  */
 @Data
 public class UserVO implements Serializable {
@@ -34,14 +36,86 @@ public class UserVO implements Serializable {
     private String userProfile;
 
     /**
+     * GigHub
+     */
+    private String gitHubName;
+
+
+    /**
+     * 个人网站、博客或者作品集等
+     */
+    private String websites;
+
+    /**
+     * 性别 0为女性 1为男性
+     */
+    private Integer gender;
+
+    /**
+     * 地址
+     */
+    private String address;
+
+    /**
+     * 标签 JSON
+     */
+    private String tags;
+
+    /**
+     * 生日
+     */
+    private Date birthday;
+
+    /**
+     * 就读学校
+     */
+    private String school;
+
+    /**
+     * 公司
+     */
+    private String company;
+
+    /**
+     * 职位
+     */
+    private String position;
+
+    /**
      * 用户角色：user/admin/ban
      */
     private String userRole;
 
     /**
+     * 关注数
+     */
+    private Long concernNum;
+    /**
+     * 粉丝数
+     */
+    private Long fansNum;
+
+    /**
+     * 是否关注
+     */
+    private Boolean isConcern;
+
+    /**
      * 创建时间
      */
     private Date createTime;
+
+    /**
+     * 对象转封装类
+     */
+    public static UserVO objToVo(User user){
+        if (user == null){
+            return null;
+        }
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user,userVO);
+        return userVO;
+    }
 
     private static final long serialVersionUID = 1L;
 }

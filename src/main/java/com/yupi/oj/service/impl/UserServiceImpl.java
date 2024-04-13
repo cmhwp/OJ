@@ -4,21 +4,26 @@ import static com.yupi.oj.constant.UserConstant.USER_LOGIN_STATE;
 
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yupi.oj.common.ErrorCode;
 import com.yupi.oj.constant.CommonConstant;
 import com.yupi.oj.exception.BusinessException;
+import com.yupi.oj.mapper.FollowMapper;
 import com.yupi.oj.mapper.UserMapper;
 import com.yupi.oj.model.dto.user.UserQueryRequest;
+import com.yupi.oj.model.entity.Follow;
 import com.yupi.oj.model.entity.User;
 import com.yupi.oj.model.enums.UserRoleEnum;
 import com.yupi.oj.model.vo.LoginUserVO;
+import com.yupi.oj.model.vo.PostVO;
 import com.yupi.oj.model.vo.UserVO;
 import com.yupi.oj.service.UserService;
 import com.yupi.oj.utils.SqlUtils;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
@@ -41,6 +46,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * 盐值，混淆密码
      */
     public static final String SALT = "yupi";
+
+    @Resource
+    private FollowMapper followMapper;
+
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -105,6 +114,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             log.info("user login failed, userAccount cannot match userPassword");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
         }
+        //Token
+
         // 3. 记录用户的登录态
         request.getSession().setAttribute(USER_LOGIN_STATE, user);
         return this.getLoginUserVO(user);
@@ -259,6 +270,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String userRole = userQueryRequest.getUserRole();
         String sortField = userQueryRequest.getSortField();
         String sortOrder = userQueryRequest.getSortOrder();
+
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(id != null, "id", id);
         queryWrapper.eq(StringUtils.isNotBlank(unionId), "unionId", unionId);
@@ -269,5 +281,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
         return queryWrapper;
+    }
+
+    @Override
+    public Page<UserVO> getUserVOPage(Page<User> userPage, HttpServletRequest request) {
+        List<User> userList = userPage.getRecords();
+        Page<UserVO> userVOPage = new Page<>(userPage.getCurrent(), userPage.getSize(), userPage.getTotal());
+        if (CollUtil.isEmpty(userList)) {
+            return userVOPage;
+        }
+
+        // 1. 关联查询用户信息
+        Set<Long> userIdSet = userList.stream().map(User::getId).collect(Collectors.toSet());
+        Map<Long, User> userIdUserMap = listByIds(userIdSet).stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
+
+        // 2. 已登录，获取用户关注状态
+        Map<Long, Boolean> userIdFollowMap = new HashMap<>();
+        User loginUser = getLoginUserPermitNull(request);
+        if (loginUser != null) {
+            List<Long> followUserIdList = new ArrayList<>(userIdSet);
+            QueryWrapper<Follow> followQueryWrapper = new QueryWrapper<>();
+            followQueryWrapper.eq("userId", loginUser.getId());
+            followQueryWrapper.in("followId", followUserIdList);
+            List<Follow> followList = followMapper.selectList(followQueryWrapper);
+            followList.forEach(follow -> userIdFollowMap.put(follow.getFollowId(),true));
+        }
+
+        // 3. 填充用户信息
+        List<UserVO> userVOList = userList.stream().map(user -> {
+            UserVO userVO = new UserVO();
+            BeanUtils.copyProperties(userIdUserMap.get(user.getId()), userVO);
+            userVO.setIsConcern(userIdFollowMap.getOrDefault(user.getId(), false));
+            return userVO;
+        }).collect(Collectors.toList());
+        userVOPage.setRecords(userVOList);
+        return userVOPage;
     }
 }

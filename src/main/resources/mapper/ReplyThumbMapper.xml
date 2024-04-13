@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yupi.oj.mapper.ReplyThumbMapper">
+
+    <resultMap id="BaseResultMap" type="com.yupi.oj.model.entity.ReplyThumb">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="replyId" column="replyId" jdbcType="BIGINT"/>
+            <result property="userId" column="userId" jdbcType="BIGINT"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,replyId,userId,
+        createTime,updateTime
+    </sql>
+</mapper>

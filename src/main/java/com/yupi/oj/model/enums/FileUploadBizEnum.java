@@ -15,6 +15,7 @@ public enum FileUploadBizEnum {
 
     USER_AVATAR("用户头像", "user_avatar");
 
+
     private final String text;
 
     private final String value;

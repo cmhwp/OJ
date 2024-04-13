@@ -1,5 +1,6 @@
 package com.yupi.oj.model.dto.post;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import lombok.Data;
@@ -27,11 +28,24 @@ public class PostUpdateRequest implements Serializable {
      * 内容
      */
     private String content;
+    /**
+     * 摘要
+     */
+    private String summary;
+    /**
+     * 封面
+     */
+    private String cover;
 
     /**
      * 标签列表
      */
     private List<String> tags;
+    /**
+     * 状态：allow - 允许 ban - 禁止
+     */
+    private String status;
 
+    @Serial
     private static final long serialVersionUID = 1L;
 }

@@ -45,6 +45,20 @@ public class PostQueryRequest extends PageRequest implements Serializable {
      * 标签列表
      */
     private List<String> tags;
+    /**
+     * 摘要
+     */
+    private String summary;
+
+    /**
+     * 状态：allow - 允许 ban - 禁止
+     */
+    private String status;
+
+    /**
+     * 话题
+     */
+    private String topic;
 
     /**
      * 至少有一个标签
