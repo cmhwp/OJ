@@ -49,5 +49,10 @@ public class UserQueryRequest extends PageRequest implements Serializable {
      */
     private Long followId;
 
+    /**
+     * usrId
+     */
+    private Long userId;
+
     private static final long serialVersionUID = 1L;
 }

@@ -89,11 +89,11 @@ public class UserVO implements Serializable {
     /**
      * 关注数
      */
-    private Long concernNum;
+    private Integer concernNum;
     /**
      * 粉丝数
      */
-    private Long fansNum;
+    private Integer fansNum;
 
     /**
      * 是否关注

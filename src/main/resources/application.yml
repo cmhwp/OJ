@@ -84,6 +84,12 @@ wx:
     appSecret: xxx
 # 对象存储
 # todo 需替换配置
+cos:
+  client:
+    accessKey: AKID1GgBCKKDFCVxjKo9JIMQMKTzQk0BNVVZ
+    secretKey: DdEmUAmSH4x7UtFkJpFjO2aN6oT9xljx
+    region: ap-chongqing
+    bucket: onlinejudge-1318048461
 
 # 接口文档配置
 knife4j:

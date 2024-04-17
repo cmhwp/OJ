@@ -62,7 +62,7 @@ public class FollowController {
         long size = userQueryRequest.getPageSize();
         // 限制爬虫
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
-        Page<User> userPage = followService.listFollowByPage(new Page<>(current, size), userService.getQueryWrapper(userQueryRequest), loginUser.getId() );
+        Page<User> userPage = followService.listFollowByPage(new Page<>(current, size), userService.getQueryWrapper(userQueryRequest), userQueryRequest.getUserId());
         return ResultUtils.success(userService.getUserVOPage(userPage,request));
     }
     /**
@@ -77,7 +77,7 @@ public class FollowController {
         User user = userService.getLoginUser(request);
         Long userId = user.getId();
         //从数据库中查询信息
-        Long followStatus = followService.getFollowStatus(userId,followId);
+        Long followStatus = followService.getFollowStatus(followId,userId);
         return ResultUtils.success(followStatus);
     }
 }

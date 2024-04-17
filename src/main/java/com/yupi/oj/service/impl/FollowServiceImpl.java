@@ -72,40 +72,40 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow>
         Follow oldfollow = this.getOne(followQueryWrapper);
         boolean result;
         //已关注
-        if(oldfollow != null) {
+        if (oldfollow != null) {
             result = this.remove(followQueryWrapper);
-            if(result){
+            if (result) {
                 // 关注者的关注数-1
                 userService.update()
-                        .eq("id", followId)
+                        .eq("id", userId)
                         .gt("concernNum", 0)
                         .setSql("concernNum = concernNum - 1")
                         .update();
                 // 被关注者的粉丝数-1
                 result = userService.update()
-                        .eq("id", userId)
+                        .eq("id", followId)
                         .gt("fansNum", 0)
                         .setSql("fansNum = fansNum - 1")
                         .update();
-                return result ? -1:0;
+                return result ? -1 : 0;
             } else {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR);
             }
         } else {
             //未关注
             result = this.save(follow);
-            if(result){
+            if (result) {
                 // 关注者的关注数+1
                 userService.update()
-                        .eq("id", followId)
+                        .eq("id", userId)
                         .setSql("concernNum = concernNum + 1")
                         .update();
                 // 被关注者的粉丝数+1
                 result = userService.update()
-                        .eq("id", userId)
+                        .eq("id", followId)
                         .setSql("fansNum = fansNum + 1")
                         .update();
-                return result ? 1:0;
+                return result ? 1 : 0;
             } else {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR);
             }
