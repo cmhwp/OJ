@@ -74,10 +74,12 @@ public class UserController {
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
+        String email = userRegisterRequest.getEmail();
+        String code = userRegisterRequest.getCode();
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, email, code)) {
             return null;
         }
-        long result = userService.userRegister(userAccount, userPassword, checkPassword);
+        long result = userService.userRegister(userAccount, userPassword, checkPassword, email, code);
         return ResultUtils.success(result);
     }
 
@@ -99,6 +101,23 @@ public class UserController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         LoginUserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
+        return ResultUtils.success(loginUserVO);
+    }
+    /**
+     * 用户登录（邮箱）
+     * @param userLoginEmailRequest
+     */
+    @PostMapping("/login/email")
+    public BaseResponse<LoginUserVO> userLoginByEmail(@RequestBody UserLoginEmailRequest userLoginEmailRequest, HttpServletRequest request) {
+        if(userLoginEmailRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        String email = userLoginEmailRequest.getEmail();
+        String code = userLoginEmailRequest.getCode();
+        if(StringUtils.isAnyBlank(email,code)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        LoginUserVO loginUserVO = userService.userLoginByEmail(email,code,request);
         return ResultUtils.success(loginUserVO);
     }
 
@@ -320,4 +339,28 @@ public class UserController {
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
+    /**
+     * 重置密码
+     * @param userResetPasswordRequest
+     */
+    @PostMapping("/reset/password")
+    public BaseResponse<Long> resetPassword(@RequestBody UserResetPasswordRequest userResetPasswordRequest, HttpServletRequest request) {
+        // 参数校验
+        if (userResetPasswordRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        String userPassword = userResetPasswordRequest.getUserPassword();
+        String email = userResetPasswordRequest.getEmail();
+        String code = userResetPasswordRequest.getCode();
+        if (StringUtils.isAnyBlank(userPassword, email, code)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数不能为空");
+        }
+
+        // 重置密码
+        long userId = userService.resetPassword(userPassword, email, code, request);
+
+        // 返回用户ID
+        return ResultUtils.success(userId);
+    }
+
 }

@@ -18,6 +18,7 @@ import com.yupi.oj.model.enums.UserRoleEnum;
 import com.yupi.oj.model.vo.LoginUserVO;
 import com.yupi.oj.model.vo.PostVO;
 import com.yupi.oj.model.vo.UserVO;
+import com.yupi.oj.service.MailService;
 import com.yupi.oj.service.UserService;
 import com.yupi.oj.utils.SqlUtils;
 
@@ -50,12 +51,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private FollowMapper followMapper;
 
+    @Resource
+    private MailService mailService;
+
 
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword) {
+    public long userRegister(String userAccount, String userPassword, String checkPassword, String email, String code) {
         // 1. 校验
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, email)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数不能为空");
+        }
+        if (!email.matches("[a-zA-Z0-9_]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}")) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式不正确");
         }
         if (userAccount.length() < 4) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号过短");
@@ -75,18 +82,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             if (count > 0) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号重复");
             }
+            QueryWrapper<User> emailQueryWrapper = new QueryWrapper<>();
+            emailQueryWrapper.eq("email", email);
+            long emailCount = this.baseMapper.selectCount(emailQueryWrapper);
+            if (emailCount > 0) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱已被注册");
+            }
+            // Verify the code
+            if (!mailService.verifyCode(email, code)) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "验证码错误或已过期");
+            }
             // 2. 加密
             String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
             // 3. 插入数据
             User user = new User();
             user.setUserAccount(userAccount);
             user.setUserPassword(encryptPassword);
+            user.setEmail(email);
             user.setUserAvatar("https://himg.bdimg.com/sys/portraitn/item/03cde88aa5e69cabe59682e58fa3e59abce7b396df8f");
             user.setUserProfile("请填写一下个人简介吧！");
             boolean saveResult = this.save(user);
             if (!saveResult) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
             }
+            mailService.deleteCode(email);
             return user.getId();
         }
     }
@@ -152,6 +171,47 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return getLoginUserVO(user);
         }
     }
+
+    @Override
+    public LoginUserVO userLoginByEmail(String email, String code, HttpServletRequest request) {
+        //1. 参数校验
+        if (StringUtils.isAnyBlank(email, code)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数不能为空");
+        }
+
+        // 2. 验证邮箱和验证码
+        if (!mailService.verifyCode(email, code)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱或验证码错误");
+        }
+
+        // 3. 查询用户是否存在，不存在则自动注册
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("email", email);
+        User user = this.baseMapper.selectOne(queryWrapper);
+        if (user == null) {
+            // 如果用户不存在，则自动注册用户
+            user = new User();
+            user.setEmail(email);
+            user.setUserAvatar("https://himg.bdimg.com/sys/portraitn/item/03cde88aa5e69cabe59682e58fa3e59abce7b396df8f");
+            user.setUserProfile("请填写一下个人简介吧！");
+            user.setUserAccount(email);
+            // 2. 加密
+            String encryptPassword = DigestUtils.md5DigestAsHex((SALT + email).getBytes());
+            user.setUserPassword(encryptPassword);
+            boolean saveResult = this.save(user);
+            if (!saveResult) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败");
+            }
+        }
+
+        // 4. 记录用户的登录态
+        request.getSession().setAttribute(USER_LOGIN_STATE, user);
+        mailService.deleteCode(email);
+
+        // 5. 返回登录用户信息
+        return this.getLoginUserVO(user);
+    }
+
 
     /**
      * 获取当前登录用户
@@ -317,5 +377,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }).collect(Collectors.toList());
         userVOPage.setRecords(userVOList);
         return userVOPage;
+    }
+
+    @Override
+    public long resetPassword(String userPassword, String email, String code, HttpServletRequest request) {
+        //1.参数校验
+        if (StringUtils.isAnyBlank(userPassword, email, code)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
+        }
+        if (userPassword.length() <8 ){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码长度不能小于8位");
+        }
+        //2.验证邮箱和验证码
+        if (!mailService.verifyCode(email, code)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱或验证码错误");
+        }
+        //3.查询用户是否存在
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("email", email);
+        User user = this.baseMapper.selectOne(queryWrapper);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
+        }
+        // 4. 更新用户密码
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+        user.setUserPassword(encryptPassword);
+        boolean updateResult = this.updateById(user);
+        if (!updateResult) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "密码重置失败");
+        }
+
+        // 5. 返回用户ID
+        return user.getId();
     }
 }

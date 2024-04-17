@@ -101,6 +101,11 @@ public class UserVO implements Serializable {
     private Boolean isConcern;
 
     /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
      * 创建时间
      */
     private Date createTime;

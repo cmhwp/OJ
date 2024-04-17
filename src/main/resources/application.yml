@@ -32,6 +32,24 @@ spring:
     port: 6379
     timeout: 5000
     password: abc123456
+  mail:
+    # 邮件配置信息
+    # 163邮箱的SMTP服务器配置
+    protocol: smtp  # 使用的邮件协议
+    default-encoding: UTF-8  # 默认编码格式
+    test-connection: true # 启动时是否测试连接
+    host: smtp.163.com  # SMTP服务器地址
+    port: 465 # 端口号（默认为SMTP的标准端口）
+    username: cmh22408@163.com # 发件人邮箱地址
+    password: QDTXLMQLCARYHZYS  # 发件人邮箱密码
+    properties:
+      # 邮件客户端属性配置
+      mail.smtp.auth: true  # 启用SMTP身份验证
+      mail.smtp.starttls.enable: true  # 启用STARTTLS协议
+      mail.smtp.starttls.required: true  # 要求使用STARTTLS协议
+      mail.smtp.socketFactory.port: 465  # SSL连接使用的端口号
+      mail.smtp.socketFactory.class: javax.net.ssl.SSLSocketFactory  # SSL连接的SocketFactory类
+      mail.smtp.socketFactory.fallback: false  # SSL连接失败时不回退到非加密连接
   # Elasticsearch 配置
   # todo 需替换配置，然后取消注释
 #  elasticsearch:

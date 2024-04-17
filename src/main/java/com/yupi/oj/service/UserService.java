@@ -29,7 +29,7 @@ public interface UserService extends IService<User> {
      * @param checkPassword 校验密码
      * @return 新用户 id
      */
-    long userRegister(String userAccount, String userPassword, String checkPassword);
+    long userRegister(String userAccount, String userPassword, String checkPassword, String email, String code);
 
     /**
      * 用户登录
@@ -49,6 +49,13 @@ public interface UserService extends IService<User> {
      * @return 脱敏后的用户信息
      */
     LoginUserVO userLoginByMpOpen(WxOAuth2UserInfo wxOAuth2UserInfo, HttpServletRequest request);
+
+    /**
+     * 邮箱登录
+     * @param email
+     * @param code
+     */
+    LoginUserVO userLoginByEmail(String email, String code, HttpServletRequest request);
 
     /**
      * 获取当前登录用户
@@ -129,4 +136,9 @@ public interface UserService extends IService<User> {
      * @return
      */
     Page<UserVO> getUserVOPage(Page<User> userPage, HttpServletRequest request);
+
+    /**
+     * 重置密码
+     */
+    long resetPassword(String userPassword,String email,String code,HttpServletRequest request);
 }
