@@ -1,27 +1,23 @@
 package com.yupi.oj.model.enums;
 
-import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * 题目提交语言枚举
- */
-public enum QuestionSubmitLanguageEnum {
+public enum SearchTypeEnum {
 
-    // 0 - 待判题， 1 - 判题中， 2 - 成功， 3 - 失败
-    JAVA("java", "java"),
-    CPLUSPLUS("cpp", "cpp"),
-    PYTHON("python", "python");
-
+    USER("用户", "user"),
+    PICTURE("图片", "picture"),
+    QUESTION("题目", "question"),
+    POST("帖子", "post");
 
     private final String text;
 
     private final String value;
 
-    QuestionSubmitLanguageEnum(String text, String value) {
+    SearchTypeEnum(String text, String value) {
         this.text = text;
         this.value = value;
     }
@@ -41,11 +37,11 @@ public enum QuestionSubmitLanguageEnum {
      * @param value
      * @return
      */
-    public static QuestionSubmitLanguageEnum getEnumByValue(String value) {
+    public static SearchTypeEnum getEnumByValue(String value) {
         if (ObjectUtils.isEmpty(value)) {
             return null;
         }
-        for (QuestionSubmitLanguageEnum anEnum : QuestionSubmitLanguageEnum.values()) {
+        for (SearchTypeEnum anEnum : SearchTypeEnum.values()) {
             if (anEnum.value.equals(value)) {
                 return anEnum;
             }
@@ -61,3 +57,4 @@ public enum QuestionSubmitLanguageEnum {
         return text;
     }
 }
+

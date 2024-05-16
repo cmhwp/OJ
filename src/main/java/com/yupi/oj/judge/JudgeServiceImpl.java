@@ -103,7 +103,7 @@ public class JudgeServiceImpl implements JudgeService {
 
         // 5）根据沙箱的执行结果，设置题目的判题状态和信息
         JudgeContext judgeContext = new JudgeContext();
-        judgeContext.setJudgeInfo(executeCodeResponse.getJudgeInfo());
+         judgeContext.setJudgeInfo(executeCodeResponse.getJudgeInfo());
         judgeContext.setInputList(inputList);
         judgeContext.setOutputList(executeCodeResponse.getOutputList());
         judgeContext.setJudgeCaseList(judgeCaseList);
@@ -186,7 +186,7 @@ public class JudgeServiceImpl implements JudgeService {
         ExecuteCodeRequest logicCodeCodeRequest = ExecuteCodeRequest.builder().code(codeToExecute).language(language).inputList(inputList).build();
         ExecuteCodeResponse logicCodeResponse = codeSandbox.executeCode(logicCodeCodeRequest);
 
-        if (logicCodeResponse.getStatus() != 1) {
+        if (logicCodeResponse.getStatus() != 2) {
             questionSubmitRunResultResponse.setError_message(logicCodeResponse.getMessage());
             questionSubmitRunResultResponse.setStatus(1);
             return questionSubmitRunResultResponse;
@@ -212,7 +212,7 @@ public class JudgeServiceImpl implements JudgeService {
         ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
 
         // 表示编译错误或执行错误
-        if (executeCodeResponse.getStatus() != 1) {
+        if (executeCodeResponse.getStatus() != 2) {
             // 加工错误信息
             String errorMessage = processErrorMessage(executeCodeResponse, backendCode, frontendCode);
             questionSubmitRunResultResponse.setError_message(errorMessage);

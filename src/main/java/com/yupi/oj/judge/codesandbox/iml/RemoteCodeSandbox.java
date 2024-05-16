@@ -14,17 +14,28 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class RemoteCodeSandbox implements CodeSandbox {
 
-    // 定义鉴权请求头和密钥
-    private static final String AUTH_REQUEST_HEADER = "auth";
+//    // 定义鉴权请求头和密钥
+//    private static final String AUTH_REQUEST_HEADER = "auth";
+//
+//    private static final String AUTH_REQUEST_SECRET = "secretKey";
 
-    private static final String AUTH_REQUEST_SECRET = "secretKey";
+    /**
+     * 定义鉴权请求头
+     */
+    private static final String AUTH_REQUEST_HEADER = "sspuoj-codesandbox-auth-by-zzx";
+
+    /**
+     * 定义鉴权请求头中的密钥
+     */
+    private static final String AUTH_REQUEST_SECRET = "$W$~vrZwe7z&L!ht^U%fF2zZzHTjWSwY%@ZeEJ^*(qZ()D3npx";
+
 
     @Override
     public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
         System.out.println("远程代码沙箱");
         // todo 修改成线上的接口
-         String url = "http://localhost:8090/executeCode";
-//        String url = "http://8.134.37.7:8081/executeCode";
+         String url = "http://42.194.144.223:8090/codesandbox/run";
+//        String url = "http://localhost:8090/codesandbox/run";
         String json = JSONUtil.toJsonStr(executeCodeRequest);
         String responseStr = HttpUtil.createPost(url)
                 .header(AUTH_REQUEST_HEADER, AUTH_REQUEST_SECRET)

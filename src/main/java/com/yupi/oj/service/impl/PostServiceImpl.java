@@ -69,6 +69,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
     private PostReadMapper postReadMapper;
 
     @Resource
+    private PostMapper postMapper;
+
+    @Resource
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     @Override
@@ -360,6 +363,29 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         }).collect(Collectors.toList());
         postVOPage.setRecords(postVOList);
         return postVOPage;
+    }
+
+    @Override
+    public Page<PostVO> listPostVOByPage(PostQueryRequest postQueryRequest, HttpServletRequest request) {
+        long current = postQueryRequest.getCurrent();
+        long size = postQueryRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 30, ErrorCode.PARAMS_ERROR);
+        Page<Post> postPage = this.page(new Page<>(current, size),
+                this.getQueryWrapper(postQueryRequest));
+        return this.getPostVOPage(postPage, request);
+    }
+
+    /**
+     * 根据用户ID获取发帖子
+     *
+     * @param userId 用户ID
+     * @return 返回用户发的帖子列表
+     */
+    public List<Post> getPostsByUserId(long userId) {
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userId", userId);
+        return postMapper.selectList(queryWrapper);
     }
 
 }

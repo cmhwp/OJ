@@ -7,6 +7,7 @@ import com.yupi.oj.model.dto.post.PostQueryRequest;
 import com.yupi.oj.model.entity.Post;
 import com.yupi.oj.model.vo.PostVO;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 帖子服务
@@ -57,4 +58,15 @@ public interface PostService extends IService<Post> {
      * @return
      */
     Page<PostVO> getPostVOPage(Page<Post> postPage, HttpServletRequest request);
+
+    Page<PostVO> listPostVOByPage(PostQueryRequest postQueryRequest, HttpServletRequest request);
+
+    /**
+     * 根据用户ID获取发帖子
+     *
+     * @param userId 用户ID
+     * @return 返回用户发的帖子列表
+     */
+    List<Post> getPostsByUserId(long userId);
+
 }

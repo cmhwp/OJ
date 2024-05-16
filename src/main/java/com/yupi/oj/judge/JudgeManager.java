@@ -22,9 +22,7 @@ public class JudgeManager {
     JudgeInfo doJudge(JudgeContext judgeContext) {
         String language = judgeContext.getLanguage();
         JudgeStrategy judgeStrategy = new DefaultJudgeStrategy();
-        if ("java".equals(language)) {
-            judgeStrategy = new JavaLanguageJudgeStrategy();
-        }
+        judgeStrategy = new JavaLanguageJudgeStrategy();
         return judgeStrategy.doJudge(judgeContext);
     }
 

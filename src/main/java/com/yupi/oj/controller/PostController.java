@@ -184,16 +184,11 @@ public class PostController {
      */
     @PostMapping("/list/page/vo")
     public BaseResponse<Page<PostVO>> listPostVOByPage(@RequestBody PostQueryRequest postQueryRequest,
-            HttpServletRequest request) {
-        long current = postQueryRequest.getCurrent();
-        long size = postQueryRequest.getPageSize();
-        // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
-        Page<Post> postPage = postService.page(new Page<>(current, size),
-                postService.getQueryWrapper(postQueryRequest));
-        return ResultUtils.success(postService.getPostVOPage(postPage, request));
-    }
+                                                       HttpServletRequest request) {
 
+        Page<PostVO> postVOPage = postService.listPostVOByPage(postQueryRequest, request);
+        return ResultUtils.success(postVOPage);
+    }
     /**
      * 分页获取当前用户创建的资源列表
      *
@@ -268,6 +263,32 @@ public class PostController {
         }
         boolean result = postService.updateById(post);
         return ResultUtils.success(result);
+    }
+
+    /**
+     * 根据用户ID获取发帖子
+     *
+     * @param userId 用户ID
+     * @param request HTTP请求对象
+     * @return 返回用户发的帖子列表
+     */
+    @GetMapping("/getByUserId")
+    public BaseResponse<List<Post>> getPostsByUserId(long userId, HttpServletRequest request) {
+        if (userId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 获取登录用户信息
+        User loginUser = userService.getLoginUser(request);
+
+//        // 检查是否有权限查看该用户的帖子（可以根据实际需求进行权限控制）
+//        if (!userService.isAdmin(loginUser) && loginUser.getId() != userId) {
+//            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+//        }
+
+        // 查询用户发的帖子
+        List<Post> userPosts = postService.getPostsByUserId(userId);
+
+        return ResultUtils.success(userPosts);
     }
 
 }

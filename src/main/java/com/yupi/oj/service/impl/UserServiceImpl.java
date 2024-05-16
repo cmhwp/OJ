@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yupi.oj.common.ErrorCode;
 import com.yupi.oj.constant.CommonConstant;
 import com.yupi.oj.exception.BusinessException;
+import com.yupi.oj.exception.ThrowUtils;
 import com.yupi.oj.mapper.FollowMapper;
 import com.yupi.oj.mapper.UserMapper;
 import com.yupi.oj.model.dto.user.UserQueryRequest;
@@ -402,6 +403,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 4. 更新用户密码
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
         user.setUserPassword(encryptPassword);
+        user.setUserAccount(email);
         boolean updateResult = this.updateById(user);
         if (!updateResult) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "密码重置失败");
@@ -409,5 +411,52 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // 5. 返回用户ID
         return user.getId();
+    }
+
+    @Override
+    public long updatePassword(String oldPassword, String newPassword, String confirmPassword, HttpServletRequest request) {
+        User user = getLoginUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "用户未登录");
+        }
+        // 1. 校验密码是否为空
+        if (StringUtils.isAnyBlank(oldPassword, newPassword, confirmPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
+        }
+        // 2. 检查新密码长度
+        if (newPassword.length() < 8) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "新密码长度不能小于8位");
+        }
+        // 3. 校验新密码与确认密码是否一致
+        if (!newPassword.equals(confirmPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的新密码不一致");
+        }
+        // 4. 验证旧密码是否正确
+        String encryptedOldPassword = DigestUtils.md5DigestAsHex((SALT + oldPassword).getBytes());
+        if (!user.getUserPassword().equals(encryptedOldPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "旧密码不正确");
+        }
+        // 5. 密码加密与更新
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + newPassword).getBytes());
+        user.setUserPassword(encryptPassword);
+        boolean updateResult = updateById(user);
+        if (!updateResult) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "密码更新失败");
+        }
+        return user.getId();
+    }
+
+    @Override
+    public Page<UserVO> listUserVoByPage(UserQueryRequest userQueryRequest) {
+        long current = userQueryRequest.getCurrent();
+        long size = userQueryRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+
+        Page<User> userPage = this.page(new Page<>(current, size), this.getQueryWrapper(userQueryRequest));
+        Page<UserVO> userVOPage = new Page<>(current, size, userPage.getTotal());
+        List<UserVO> userVO = this.getUserVO(userPage.getRecords());
+        userVOPage.setRecords(userVO);
+        return userVOPage;
     }
 }

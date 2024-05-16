@@ -141,4 +141,11 @@ public interface UserService extends IService<User> {
      * 重置密码
      */
     long resetPassword(String userPassword,String email,String code,HttpServletRequest request);
+
+    /**
+     * 修改密码
+     */
+    long updatePassword(String oldPassword,String newPassword,String confirmPassword,HttpServletRequest request);
+
+    Page<UserVO> listUserVoByPage(UserQueryRequest userQueryRequest);
 }

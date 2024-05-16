@@ -295,20 +295,11 @@ public class UserController {
      * @return
      */
     @PostMapping("/list/page/vo")
-    public BaseResponse<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryRequest userQueryRequest,
-            HttpServletRequest request) {
+    public BaseResponse<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryRequest userQueryRequest, HttpServletRequest request) {
         if (userQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        long current = userQueryRequest.getCurrent();
-        long size = userQueryRequest.getPageSize();
-        // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
-        Page<User> userPage = userService.page(new Page<>(current, size),
-                userService.getQueryWrapper(userQueryRequest));
-        Page<UserVO> userVOPage = new Page<>(current, size, userPage.getTotal());
-        List<UserVO> userVO = userService.getUserVO(userPage.getRecords());
-        userVOPage.setRecords(userVO);
+        Page<UserVO> userVOPage = userService.listUserVoByPage(userQueryRequest);
         return ResultUtils.success(userVOPage);
     }
 
@@ -363,4 +354,28 @@ public class UserController {
         return ResultUtils.success(userId);
     }
 
+
+    /**
+     * 修改密码
+     */
+    @PostMapping("/update/password")
+    public BaseResponse<Long> updatePassword(@RequestBody UserChangePasswordRequest userChangePasswordRequest,HttpServletRequest request) {
+        // 参数校验
+        if (userChangePasswordRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        String oldPassword = userChangePasswordRequest.getOldPassword();
+        String newPassword = userChangePasswordRequest.getNewPassword();
+        String confirmPassword = userChangePasswordRequest.getConfirmPassword();
+
+        if (StringUtils.isAnyBlank(oldPassword, newPassword, confirmPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数不能为空");
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
+        }
+        long userId = userService.updatePassword(oldPassword, newPassword, confirmPassword,request);
+
+        return ResultUtils.success(userId);
+    }
 }
